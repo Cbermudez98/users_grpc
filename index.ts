@@ -1,36 +1,10 @@
 import grpc from "grpc";
+import { userImplementation } from "./modules/user.module";
 const usersProto: any = grpc.load('user.proto');
+
 const server = new grpc.Server();
 
-const users: any[] = []; 
-
-server.addService(usersProto.users.UserService.service, {
-  GetUser: (call: any, callback: any) => {
-    const userId = call.request.id;
-    const user = users.find((u) => u.id === userId);
-
-    if (!user) {
-      return callback({
-        code: grpc.status.NOT_FOUND,
-        details: 'Usuario no encontrado',
-      });
-    }
-
-    callback(null, { user });
-  },
-  AddUser: (call: any, callback: any) => {
-    const user = call.request;
-    console.log("🚀  ~ file: index.ts:23 ~ user:", user);
-    // Asignar un ID único al usuario (simulación)
-    user.id = (users.length + 1).toString();
-    users.push(user);
-
-    callback(null, {
-      message: 'Usuario agregado correctamente',
-      user,
-    });
-  },
-});
+server.addService(usersProto.users.UserService.service, userImplementation);
 
 const PORT = 'localhost:50051';
 server.bind(PORT, grpc.ServerCredentials.createInsecure());
